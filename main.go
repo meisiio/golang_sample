@@ -20,10 +20,18 @@ func main() {
 	}
 	person, err := userfetch(1, db)
 	if err != nil {
-		fmt.Println("could not to fetch user", err)
+		fmt.Println("could not fetch user by id", err)
 		return
 	}
-	fmt.Printf("%+v", person)
+	fmt.Printf("single user: %+v\n", person)
+
+	users, err2 := userfetchwithquery("ali", db)
+	if err2 != nil {
+		fmt.Println("db was not able to fetch rows", err2)
+		return
+	}
+	fmt.Printf("matched users: %+v\n", users)
+
 }
 
 type user struct {
@@ -39,4 +47,26 @@ func userfetch(id int, db *sql.DB) (*user, error) {
 		return &userm, err
 	}
 	return &userm, nil
+}
+func userfetchwithquery(fullname string, db *sql.DB) ([]user, error) {
+	rows, err := db.Query("SELECT id, fullname, role FROM users WHERE fullname ILIKE '%' || $1 || '%'", fullname)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []user
+	for rows.Next() {
+		u := user{}
+		if err := rows.Scan(&u.id, &u.fullname, &u.role); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
 }
