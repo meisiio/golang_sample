@@ -35,14 +35,14 @@ func dbTest() {
 }
 
 type user struct {
-	fullname string
-	id       int
-	role     string
+	Fullname string `json:"fullname" form:"fullname,default=William"`
+	ID       int    `json:"id" form:"id"`
+	Role     string `json:"role" form:"role"`
 }
 
 func userfetch(id int, db *sql.DB) (*user, error) {
 	userm := user{}
-	err := db.QueryRow("SELECT id, fullname, role FROM users WHERE id = $1", id).Scan(&userm.id, &userm.fullname, &userm.role)
+	err := db.QueryRow("SELECT id, fullname, role FROM users WHERE id = $1", id).Scan(&userm.ID, &userm.Fullname, &userm.Role)
 	if err != nil {
 		return &userm, err
 	}
@@ -58,7 +58,7 @@ func userfetchwithquery(fullname string, db *sql.DB) ([]user, error) {
 	var users []user
 	for rows.Next() {
 		u := user{}
-		if err := rows.Scan(&u.id, &u.fullname, &u.role); err != nil {
+		if err := rows.Scan(&u.ID, &u.Fullname, &u.Role); err != nil {
 			return nil, err
 		}
 		users = append(users, u)
